@@ -2,4 +2,6 @@ C:\Users\vith\Documents\Arduino\libraries\Credentials\credentials.h met deze inh
 
 
 #define mySSID "WiFissid"
+
+
 #define myPASSWORD "wifipass"
