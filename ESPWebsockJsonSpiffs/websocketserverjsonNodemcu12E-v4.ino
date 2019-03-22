@@ -9,18 +9,20 @@
    "LED" will be red since the server knows the LED is on.  When clientB turns
    the LED off, the word LED changes color to black on clientA and clientB web
    pages.
-
-   References:
-
+   All data via websocket is interpret in the browser as JSON format.
+   
 
   A ridiculous amount of coffee was consumed in the process of building this project. Add some fuel if you'd like to keep me going!
   if you the video helped you , buy me a coffee :) https://www.paypal.me/v12345vtm/3
 
+
+ References:
    https://github.com/v12345vtm/ESPWebsocket/blob/master/ESPWebsocket.ino
 
    testserver  : http://192.168.1.48/
 
 */
+
 #include <FS.h>   // Include the SPIFFS library
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
@@ -49,41 +51,21 @@ String json = "" ;
 String    payloadstring;
 String getContentType(String filename); // convert the file extension to the MIME type
 const int LEDPIN = 14;
-// Current LED status
 bool LEDStatus;
-//bool handleFileRead(String path);       // send the right file to the client (if it exists)
-
-
-
 const char* ssid = mySSID;
 const char* password = myPASSWORD;
-
-
-
-
 MDNSResponder mdns;
-
 static void writeLED(bool);
-
 ESP8266WiFiMulti WiFiMulti;
-
 ESP8266WebServer server(80);
 WebSocketsServer webSocket = WebSocketsServer(81);
 
-// this opens the file "f.txt" in read-mode
-// File f = SPIFFS.open("/f.txt", "r");
-
 void spifstest() {
-  // always use this to "mount" the filesystem
-  // bool result = SPIFFS.begin();
-  // Serial.println("SPIFFS opened: " + result + "\n");
-
-  // this opens the file "f.txt" in read-mode
+// this opens the file   in read-mode
   File f = SPIFFS.open("/status.json", "r");
 
   if (!f) {
     Serial.println("File doesn't exist yet. Creating it");
-
     // open the file in write mode
     File f = SPIFFS.open("/status.json", "w");
     if (!f) {
@@ -95,81 +77,49 @@ void spifstest() {
   }
 
   else
-  { //update
-    // open the file in write mode
+  { //update file in write mode
     File f = SPIFFS.open("/status.json", "w");
     f.println(json);
-
     Serial.println("upd status.json" + json);
-
-
   }
-
-
-
-
-  //////////////////////verify
- 
-  f.close();
+f.close();
 
 }
 
 
 ///////////////////////////
 void loadstatus()
- {
-
-    // this opens the file  in read-mode
+ {    // this opens the file  in read-mode
   File f = SPIFFS.open("/status.json", "r");
-
-
  if (!f) {
     Serial.println("\n \n\nFile status.json; doesn't exist yet");
- 
   }
-
-
   else 
-
   {
-    //file exists
-   // we could open the file and read it
+    //file exists we could open the file and read it
     while (f.available()) {
       //Lets read line by line from the file
       String line = f.readStringUntil('n');
       Serial.println("\n\n\n uit memory gehaald: ");
         Serial.println(line);
+        f.close();
+    }    
     }
-    
-    }
-
-
-  
-  
- 
-
   }
 
-
-
-
 void updatejson()
-
 {
   json = "";
   json += '{';
   json +=   "\"Led\":\"" ; //
   json +=  String(LEDStatus); //
-
   json +=   "\",\"ESPtimer\":\"" ; //
   json += millis();
   json +=   "\",\"versie\":\"" ; //
   json += versie; //runtime van de esp in seconden
   json += "\"}";
-
   // Serial.print(json);
 }
-
 
 static const char PROGMEM INDEX_HTML[] = R"rawliteral(
 <!DOCTYPE html>
@@ -200,7 +150,6 @@ console.log("hierboven?");
 var vt_tJSONtostring = JSON.stringify(vt_tjson); //js tostring
 document.getElementById("jsonhtml").innerHTML = vt_tJSONtostring;
 
-
   var keys = Object.keys(vt_tjson);
   var waardes = Object.values(vt_tjson);
   var txt = "";
@@ -216,10 +165,7 @@ document.getElementById("jsonhtml").innerHTML = vt_tJSONtostring;
     if (vt_tjson.Led === "1") {e.style.color = 'red';}
     else 
  if (vt_tjson.Led === "0") {e.style.color = 'black';}
-  
-  
-   
-}
+  }
 
 function start() {
   websock = new WebSocket('ws://' + window.location.hostname + ':81/');
@@ -238,21 +184,15 @@ function start() {
       console.log('socket from esp recieved');
       //console.log(evt);
  wsjsonrecieved(evt);//parse updated json to html
-
     }
   };
 }
+
 function buttonclick(e) {
  // console.log ("export buttonklik js");
   websock.send(  e.id);
  console.log (e.id);
 }
-
-
-
-  
-
-
 
 </script>
 </head>
@@ -265,27 +205,16 @@ function buttonclick(e) {
 <button id="Led:on"  type="button" onclick="buttonclick(this);">On</button> 
 <button id="Led:off" type="button" onclick="buttonclick(this);">Off</button>
  <p  class="absolute" id="tabel"></p> 
- 
 
 <a href="/status.json">ESP-status</a><br>
 <a href="https://github.com/v12345vtm/ESPWebsocket">GIT-sourcecode templates</a>
 
-
-
-
  <script src="https://apis.google.com/js/platform.js"></script>
-
 <div class="g-ytsubscribe" data-channel="v12345vtm" data-layout="default" data-count="default"></div>
-
 
 </body>
 </html>
 )rawliteral";
-
-
-
-
-
 
 /////////////////////websocket template
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length)
@@ -299,8 +228,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
       {
         IPAddress ip = webSocket.remoteIP(num);
         Serial.printf("[%u] Connected from %d.%d.%d.%d url: %s\r\n", num, ip[0], ip[1], ip[2], ip[3], payload);
-       // webSocket.sendTXT(num, "hello from arduino sketch");
-       updatejson(); 
+           updatejson(); 
         webSocket.sendTXT(num,  json );//send 1e json to connected client
       }
       break;
@@ -308,32 +236,26 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
       { //jump to case label [-fpermissive]
         Serial.printf("[%u] get Text: %s\r\n", num, payload);
         for (int i = 0; i < length; i++) {
-          // string achter pointer to string doen
-        
-       payloadstring = payloadstring + (char)payload[i];
+              payloadstring = payloadstring + (char)payload[i];
         }
         int pos = payloadstring.indexOf(':');
     String   plkey  =  payloadstring.substring(0, pos);
     String    plvalue = payloadstring.substring(pos + 1);
 
-     Serial.print("browser send: ");//start stream
+     Serial.print("browser socket sended: ");//start stream
       Serial.print (plkey);//start stream
   Serial.print("and:");//start stream
       Serial.println(plvalue);//start stream
 
 if (plvalue.equals("off") ) {
-        //  TLinterval =  plvalue.toInt();//TLint is een id van de htlm   ,  de socket stuurde TLint:60  => save to variables n esp32
-         // Serial.println("tlint met value gekozen:"  + plvalue);//timelapse
-            Serial.println("ledonpl dedrukt");//start stream
+ Serial.println("ledonpl dedrukt");//start stream
           writeLED(false);
           updatejson(); 
           spifstest();
         }
         
    else if (plvalue.equals("on") ) {
-        //  TLinterval =  plvalue.toInt();//TLint is een id van de htlm   ,  de socket stuurde TLint:60  => save to variables n esp32
-         // Serial.println("tlint met value gekozen:"  + plvalue);//timelapse
-            Serial.println("ledonpl dedrukt +spifstest");//start stream
+Serial.println("ledonpl dedrukt +spifstest");//start stream
           writeLED(true);
           updatejson(); 
           spifstest();
@@ -417,15 +339,13 @@ void handleNotFound()
 static void writeLED(bool LEDon)
 {
   LEDStatus = LEDon;
-  // Note inverted logic for Adafruit HUZZAH board
   if (LEDon) {
     digitalWrite(LEDPIN, 0);
   }
   else {
     digitalWrite(LEDPIN, 1);
   }
-}//oud
-
+}
 
 String getContentType(String filename) { // convert the file extension to the MIME type
   if (filename.endsWith(".html")) return "text/html";
@@ -439,11 +359,9 @@ String getContentType(String filename) { // convert the file extension to the MI
 }
 
 bool handleFileRead(String path) { // send the right file to the client (if it exists)
-  // Serial1.println("handleFileRead: " + path);
   if (path.endsWith("/")) path += "index.html";         // If a folder is requested, send the index file
   String contentType = getContentType(path);            // Get the MIME type
   if (SPIFFS.exists(path)) {                            // If the file exists
-    //Serial1.println("spiffsbestaat wel he: " + path);
     File file = SPIFFS.open(path, "r");                 // Open it
     size_t sent = server.streamFile(file, contentType); // And send it to the client
     file.close();                                       // Then close the file again
@@ -473,7 +391,7 @@ String bestandsysteem()
   // filesysteem += "<li>/ als lan device met ipadres en versie als melding</li>";
   filesysteem += "<li>/ root</li>";
   filesysteem += "<ul>";
-  Serial1.println(filesysteem);
+  Serial.println(filesysteem);
   return filesysteem;
 }
 
@@ -482,25 +400,12 @@ String bestandsysteem()
 void setup()
 {
  Serial.begin(115200);
-
-
-
-
   pinMode(LEDPIN, OUTPUT);
   writeLED(false);
-
  SPIFFS.begin();                           // Start the SPI Flash Files System
 loadstatus();// haal de json file uit , als die bestaat !!!!
- 
-  updatejson();
-
- 
-
-  //Serial.setDebugOutput(true);
-
-  Serial.println();
-  Serial.println();
-  Serial.println();
+   updatejson();
+  Serial.println(bestandsysteem());
    Serial.print(json);
 
   for(uint8_t t = 4; t > 0; t--) {
@@ -537,14 +442,10 @@ loadstatus();// haal de json file uit , als die bestaat !!!!
   //server.onNotFound(handleNotFound);
   server.onNotFound([]() {                              // If the client requests any URI
     if (!handleFileRead(server.uri()))                  // send it if it exists
-      // server.send(404, "text/plain", "404: Not Found"); // otherwise, respond with a 404 (Not Found) error
-      // String message = "File Not Found\n\n";
-      server.send(404, "text/plain", "File Not Found\n\n");
-  });
-  
-bestandsysteem();
-  server.begin();
+      server.send(404, "text/plain", "File Not Found\n\n");// if the page not exist or is not in spiffs , send file not found
+  });  
 
+  server.begin();
   webSocket.begin();
   webSocket.onEvent(webSocketEvent);
 }
