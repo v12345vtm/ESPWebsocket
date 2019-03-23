@@ -213,7 +213,7 @@ the server stores the arguments from the url to SD card  eg. : stroomverbruik an
 <p id="jsonhtml"></p>
  
 
-<a href="/status.json">ESP-status</a><br>
+<a href="/onwthinkspeak.json">view onwthingkspeak.json</a><br>
 <a href="https://github.com/v12345vtm/ESPWebsocket">GIT-sourcecode templates</a>
 
  <script src="https://apis.google.com/js/platform.js"></script>
@@ -222,6 +222,11 @@ the server stores the arguments from the url to SD card  eg. : stroomverbruik an
 </body>
 </html>
 )rawliteral";
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 
 
